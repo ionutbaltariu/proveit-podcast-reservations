@@ -1,9 +1,15 @@
+import smtplib
+import ssl
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from typing import List
+
 from fastapi import APIRouter
 from fastapi.responses import JSONResponse
-from typing import List
+
 from model import get_all_notificari_with_filters, get_notificare_by_idNotificare, insert_tichet
-from utils import GenericSuccess, get_error_body, NOTIFICATION_NOT_FOUND_BODY, GENERIC_SUCCESS_STATUS_BODY, CREATE_GENERIC_SUCCESS_STATUS_BODY
-from view import Error, Notificare, NotificarePost
+from utils import GenericSuccess, get_error_body, NOTIFICATION_NOT_FOUND_BODY, CREATE_GENERIC_SUCCESS_STATUS_BODY
+from view import Error, Notificare, NotificarePost, NotificarePostEmail
 
 router = APIRouter()
 
@@ -66,12 +72,16 @@ def get_notificare(idNotificare: str):
                         500: {"model": Error}},
              response_model=GenericSuccess,
              tags=["notificari"])
-def post_tichet(tichet: NotificarePost):
+def post_tichet(notificare: NotificarePostEmail):
     """
     Method that handles a POST request for a notificare.
     """
 
-    notificare_dict = tichet.dict()
+    notificare_dict = notificare.dict()
+    sender_email = notificare_dict['emailSursa']
+    receiver_email = notificare_dict['emailDestinatie']
+    notificare_dict.pop('emailSursa')
+    notificare_dict.pop('emailDestinatie')
 
     db_response = insert_tichet(**notificare_dict)
 
@@ -81,6 +91,29 @@ def post_tichet(tichet: NotificarePost):
     else:
         status_code = 201
         response_body = CREATE_GENERIC_SUCCESS_STATUS_BODY
+
+    message = MIMEMultipart("alternative")
+    message["Subject"] = "Notificare PodcastTUIASI"
+    message["From"] = "podcast.tuiasi@gmail.com"
+    message["To"] = receiver_email
+
+    html = """\
+    <html>
+      <body>
+        <p>Buna,<br>
+           A fost creata o noua cerere de rezervare pe PodcastTUIASI de catre """ + sender_email + """<br>
+        </p>
+      </body>
+    </html>
+    """
+
+    part2 = MIMEText(html, "html")
+    message.attach(part2)
+
+    context = ssl.create_default_context()
+    with smtplib.SMTP_SSL("smtp.gmail.com", 465, context=context) as server:
+        server.login("podcast.tuiasi@gmail.com", "1234ASDF!")
+        server.sendmail("podcast.tuiasi@gmail.com", receiver_email, message.as_string())
 
     return JSONResponse(status_code=status_code, content=response_body)
 

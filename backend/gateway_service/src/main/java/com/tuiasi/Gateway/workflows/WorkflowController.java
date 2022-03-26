@@ -3,6 +3,7 @@ package com.tuiasi.Gateway.workflows;
 import com.tuiasi.Gateway.connector.SOAPClient;
 import com.tuiasi.Gateway.models.UserDetails;
 import com.tuiasi.Gateway.soap.auth.podcast.validate.ValidateResponse;
+import org.apache.coyote.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,7 +20,7 @@ import java.util.stream.Collectors;
 
 @SuppressWarnings("FieldCanBeLocal")
 @RestController
-@CrossOrigin("http://localhost:3001")
+@CrossOrigin("*")
 public class WorkflowController {
 
     @Autowired
@@ -123,13 +124,13 @@ public class WorkflowController {
         try{
             token = login(user.get("username"), user.get("password"));
         }catch(Exception e){
-            return ResponseEntity.badRequest().body("Eroare la autentificare");
+            return ResponseEntity.badRequest().body("{\"mesaj\":\"Eroare la autentificare\"}");
         }
         if(token != null && !token.equals("")){
             map.put("token", token);
             return ResponseEntity.ok(map);
         }
-        return ResponseEntity.badRequest().body("Eroare la autentificare");
+        return ResponseEntity.badRequest().body("{\"mesaj\":\"Eroare la autentificare\"}");
     }
 
     @PostMapping("/api/register")
@@ -138,13 +139,23 @@ public class WorkflowController {
         try{
             role = validate(authorization.split(" ")[1]).getRole();
         }catch(Exception e){
-            return ResponseEntity.badRequest().body("Eroare la autentificare");
+            return ResponseEntity.badRequest().body("{\"mesaj\":\"Eroare la autentificare\"}");
         }
         if(Objects.equals(role, "moderator")){
             // 201 - change to 201
             return ResponseEntity.ok(register(user.get("username"), user.get("password")));
         }
-        return ResponseEntity.badRequest().body("Eroare la autentificare");
+        return ResponseEntity.badRequest().body("{\"mesaj\":\"Eroare la autentificare\"}");
+    }
+
+    @RequestMapping("/api/notificari/**")
+    private ResponseEntity<Object> notifications(){
+        return ResponseEntity.ok("200");
+    }
+
+    @RequestMapping("/api/tichete/**")
+    private ResponseEntity<Object> tichete(){
+        return ResponseEntity.ok("200");
     }
 
 }

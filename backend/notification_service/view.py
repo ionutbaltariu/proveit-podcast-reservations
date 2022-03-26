@@ -22,6 +22,17 @@ class NotificarePost(HyperModel):
         orm_mode = True
 
 
+class NotificarePostEmail(HyperModel):
+    emailSursa: str
+    emailDestinatie: str
+    idUserSursa: int
+    idUserDestinatie: int
+    timestamp: datetime
+
+    class Config:
+        orm_mode = True
+
+
 class Error(BaseModel):
     error_code: int
     error_source: str
