@@ -203,7 +203,7 @@ public class WorkflowController {
     }
 
     @PostMapping("/api/register/student")
-    private ResponseEntity < Object > registerStudent(@RequestBody Map < String, String > user, @RequestHeader("Authorization") String authorization) {
+    private ResponseEntity < Object > registerStudent(@RequestBody Map < String, String > user) {
         return ResponseEntity.ok(register(user.get("username"), user.get("password")));
     }
 

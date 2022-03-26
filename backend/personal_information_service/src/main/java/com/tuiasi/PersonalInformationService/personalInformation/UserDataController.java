@@ -3,6 +3,8 @@ package com.tuiasi.PersonalInformationService.personalInformation;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 public class UserDataController {
 
@@ -10,6 +12,11 @@ public class UserDataController {
 
     public UserDataController(UserDataRepository userDataRepository) {
         this.userDataRepository = userDataRepository;
+    }
+
+    @GetMapping("/api/users/coordinators")
+    ResponseEntity<List<UserData>> getAllCoordinators(){
+        return ResponseEntity.ok(userDataRepository.findAllCoordinators());
     }
 
     @GetMapping("/api/users/{idUser}")
