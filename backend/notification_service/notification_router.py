@@ -9,7 +9,7 @@ from fastapi.responses import JSONResponse
 
 from model import get_all_notificari_with_filters, get_notificare_by_idNotificare, insert_tichet
 from utils import GenericSuccess, get_error_body, NOTIFICATION_NOT_FOUND_BODY, CREATE_GENERIC_SUCCESS_STATUS_BODY
-from view import Error, Notificare, NotificarePost, NotificarePostEmail
+from view import Error, Notificare, NotificarePostEmail
 
 router = APIRouter()
 
@@ -116,6 +116,3 @@ def post_tichet(notificare: NotificarePostEmail):
         server.sendmail("podcast.tuiasi@gmail.com", receiver_email, message.as_string())
 
     return JSONResponse(status_code=status_code, content=response_body)
-
-
-
