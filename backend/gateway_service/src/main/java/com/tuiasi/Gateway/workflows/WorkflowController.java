@@ -135,17 +135,16 @@ public class WorkflowController {
     @PostMapping("/api/register")
     private ResponseEntity<Object> register(@RequestBody Map<String,String> user, @RequestHeader("Authorization") String authorization){
         String role;
-        return ResponseEntity.ok(register(user.get("username"), user.get("password")));
-//        try{
-//            role = validate(authorization.split(" ")[1]).getRole();
-//        }catch(Exception e){
-//            return ResponseEntity.badRequest().body("Eroare la autentificare");
-//        }
-//        if(Objects.equals(role, "moderator")){
-//            // 201 - change to 201
-//            return ResponseEntity.ok(register(user.get("username"), user.get("password")));
-//        }
-//        return ResponseEntity.badRequest().body("Eroare la autentificare");
+        try{
+            role = validate(authorization.split(" ")[1]).getRole();
+        }catch(Exception e){
+            return ResponseEntity.badRequest().body("Eroare la autentificare");
+        }
+        if(Objects.equals(role, "moderator")){
+            // 201 - change to 201
+            return ResponseEntity.ok(register(user.get("username"), user.get("password")));
+        }
+        return ResponseEntity.badRequest().body("Eroare la autentificare");
     }
 
 }
