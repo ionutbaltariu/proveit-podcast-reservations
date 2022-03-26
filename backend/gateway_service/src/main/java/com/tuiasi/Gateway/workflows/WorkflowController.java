@@ -44,8 +44,7 @@ public class WorkflowController {
     }
 
     @RequestMapping("/api/programari/**")
-    public ResponseEntity<Object> foo(HttpServletRequest request) throws IOException {
-        // String restOfTheUrl = (String) request.getAttribute(HandlerMapping.PATH_WITHIN_HANDLER_MAPPING_ATTRIBUTE);
+    public ResponseEntity<Object> programari(HttpServletRequest request) throws IOException {
         String token = request.getHeader("Authorization");
 
         if(Objects.equals(request.getMethod(), "GET")){
@@ -59,7 +58,7 @@ public class WorkflowController {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access Forbidden");
             }
 
-            if ("moderator".equals(role)) {
+            if ("admin".equals(role)) {
                 switch (request.getMethod()) {
                     case "PUT":
                     case "POST":
@@ -78,9 +77,44 @@ public class WorkflowController {
                         return ResponseEntity.notFound().build();
                     }
                 }
-                if (Objects.equals(request.getMethod(), "OPTIONS")) {
-                    return ResponseEntity.ok(restTemplate.exchange(podcastScheduleService + request.getRequestURI() + (request.getQueryString() != null ? ("?" + request.getQueryString()) : ""),
-                            HttpMethod.OPTIONS, null, Object.class).getBody());
+            }
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access Forbidden");
+        }
+    }
+
+    @RequestMapping("/api/sali/**")
+    public ResponseEntity<Object> sali(HttpServletRequest request) throws IOException {
+        String token = request.getHeader("Authorization");
+
+        if(Objects.equals(request.getMethod(), "GET")){
+            return restTemplate.getForEntity(podcastScheduleService + request.getRequestURI() + (request.getQueryString()!= null ? ("?" + request.getQueryString()) : "") , Object.class);
+        }
+        else{
+            String role;
+            try{
+                role = validate(token.split(" ")[1]).getRole();
+            } catch(Exception e){
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access Forbidden");
+            }
+
+            if ("admin".equals(role)) {
+                switch (request.getMethod()) {
+                    case "PUT":
+                    case "POST":
+                        HttpHeaders headers = new HttpHeaders();
+                        headers.setContentType(MediaType.APPLICATION_JSON);
+                        String requestData = request.getReader().lines().collect(Collectors.joining());
+                        HttpEntity<Object> body = new HttpEntity<>(requestData, headers);
+                        String url = podcastScheduleService + request.getRequestURI() + (request.getQueryString() != null ? ("?" + request.getQueryString()) : "");
+                        return restTemplate.exchange(url, Objects.requireNonNull(HttpMethod.resolve(request.getMethod())), body, Object.class);
+                }
+                if ("DELETE".equals(request.getMethod())) {
+                    try {
+                        restTemplate.delete(podcastScheduleService + request.getRequestURI() + (request.getQueryString() != null ? ("?" + request.getQueryString()) : ""));
+                        return ResponseEntity.ok().build();
+                    } catch (Exception e) {
+                        return ResponseEntity.notFound().build();
+                    }
                 }
             }
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access Forbidden");
