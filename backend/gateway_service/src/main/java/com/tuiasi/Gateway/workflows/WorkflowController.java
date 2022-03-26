@@ -25,7 +25,7 @@ public class WorkflowController {
     @Autowired
     RestTemplate restTemplate;
 
-    private final String bookAuthorService = "http://localhost:8080";
+    private final String podcastScheduleService = "http://localhost:8080";
     private final Logger log = LoggerFactory.getLogger(WorkflowController.class);
 
     @Autowired
@@ -43,14 +43,13 @@ public class WorkflowController {
         return soapClient.getRegisterResponse(username, password).getStatus();
     }
 
-
-    @RequestMapping("/api/bookcollection/**")
+    @RequestMapping("/api/programari/**")
     public ResponseEntity<Object> foo(HttpServletRequest request) throws IOException {
         // String restOfTheUrl = (String) request.getAttribute(HandlerMapping.PATH_WITHIN_HANDLER_MAPPING_ATTRIBUTE);
         String token = request.getHeader("Authorization");
 
         if(Objects.equals(request.getMethod(), "GET")){
-            return restTemplate.getForEntity(bookAuthorService + request.getRequestURI() + (request.getQueryString()!= null ? ("?" + request.getQueryString()) : "") , Object.class);
+            return restTemplate.getForEntity(podcastScheduleService + request.getRequestURI() + (request.getQueryString()!= null ? ("?" + request.getQueryString()) : "") , Object.class);
         }
         else{
             String role;
@@ -68,19 +67,19 @@ public class WorkflowController {
                         headers.setContentType(MediaType.APPLICATION_JSON);
                         String requestData = request.getReader().lines().collect(Collectors.joining());
                         HttpEntity<Object> body = new HttpEntity<>(requestData, headers);
-                        String url = bookAuthorService + request.getRequestURI() + (request.getQueryString() != null ? ("?" + request.getQueryString()) : "");
+                        String url = podcastScheduleService + request.getRequestURI() + (request.getQueryString() != null ? ("?" + request.getQueryString()) : "");
                         return restTemplate.exchange(url, Objects.requireNonNull(HttpMethod.resolve(request.getMethod())), body, Object.class);
                 }
                 if ("DELETE".equals(request.getMethod())) {
                     try {
-                        restTemplate.delete(bookAuthorService + request.getRequestURI() + (request.getQueryString() != null ? ("?" + request.getQueryString()) : ""));
+                        restTemplate.delete(podcastScheduleService + request.getRequestURI() + (request.getQueryString() != null ? ("?" + request.getQueryString()) : ""));
                         return ResponseEntity.ok().build();
                     } catch (Exception e) {
                         return ResponseEntity.notFound().build();
                     }
                 }
                 if (Objects.equals(request.getMethod(), "OPTIONS")) {
-                    return ResponseEntity.ok(restTemplate.exchange(bookAuthorService + request.getRequestURI() + (request.getQueryString() != null ? ("?" + request.getQueryString()) : ""),
+                    return ResponseEntity.ok(restTemplate.exchange(podcastScheduleService + request.getRequestURI() + (request.getQueryString() != null ? ("?" + request.getQueryString()) : ""),
                             HttpMethod.OPTIONS, null, Object.class).getBody());
                 }
             }
