@@ -22,4 +22,13 @@ public interface ProgramareRepository extends JpaRepository<Programare, Long> {
     @Query(value="INSERT INTO programari(idSala, idUser, dataStart, dataStop, scop, stare, tip) " +
             "VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)", nativeQuery = true)
     void insertProgramare(int idSala, int idUser, LocalDateTime dataStart, LocalDateTime dataStop, String scop, String stare, String tip);
+
+    @Query(value="SELECT * FROM programari WHERE tip=?1", nativeQuery = true)
+    List<Programare> findByTip(String tip);
+
+    @Query(value="SELECT * FROM programari WHERE stare=?1", nativeQuery = true)
+    List<Programare> findByStare(String stare);
+
+    @Query(value="SELECT * FROM programari WHERE idSala=?1", nativeQuery = true)
+    List<Programare> findByIdSala(Integer idSala);
 }

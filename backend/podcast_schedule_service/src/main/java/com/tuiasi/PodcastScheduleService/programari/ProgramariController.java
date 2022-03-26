@@ -1,10 +1,8 @@
 package com.tuiasi.PodcastScheduleService.programari;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.lang.Nullable;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -17,7 +15,19 @@ public class ProgramariController {
     }
 
     @GetMapping("/api/podcast/programari")
-    ResponseEntity<List<Programare>> getProgramari(){
+    ResponseEntity<List<Programare>> getProgramari(
+            @Nullable @RequestParam String tip,
+            @Nullable @RequestParam String stare,
+            @Nullable @RequestParam Integer idSala){
+        if(tip != null){
+            ResponseEntity.ok(programareRepository.findByTip(tip));
+        }
+        if(stare != null){
+            ResponseEntity.ok(programareRepository.findByStare(stare));
+        }
+        if(idSala != null){
+            ResponseEntity.ok(programareRepository.findByIdSala(idSala));
+        }
 
         return ResponseEntity.ok(programareRepository.findAll());
 
