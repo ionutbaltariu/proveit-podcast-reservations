@@ -25,7 +25,7 @@ public class WorkflowController {
     @Autowired
     RestTemplate restTemplate;
 
-    private final String podcastScheduleService = "http://localhost:8080";
+    private final String podcastScheduleService = "http://localhost:6060";
     private final Logger log = LoggerFactory.getLogger(WorkflowController.class);
 
     @Autowired
@@ -43,47 +43,8 @@ public class WorkflowController {
         return soapClient.getRegisterResponse(username, password).getStatus();
     }
 
-    @RequestMapping("/api/programari/**")
+    @RequestMapping("/api/podcast/**")
     public ResponseEntity<Object> programari(HttpServletRequest request) throws IOException {
-        String token = request.getHeader("Authorization");
-
-        if(Objects.equals(request.getMethod(), "GET")){
-            return restTemplate.getForEntity(podcastScheduleService + request.getRequestURI() + (request.getQueryString()!= null ? ("?" + request.getQueryString()) : "") , Object.class);
-        }
-        else{
-            String role;
-            try{
-                role = validate(token.split(" ")[1]).getRole();
-            } catch(Exception e){
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access Forbidden");
-            }
-
-            if ("admin".equals(role)) {
-                switch (request.getMethod()) {
-                    case "PUT":
-                    case "POST":
-                        HttpHeaders headers = new HttpHeaders();
-                        headers.setContentType(MediaType.APPLICATION_JSON);
-                        String requestData = request.getReader().lines().collect(Collectors.joining());
-                        HttpEntity<Object> body = new HttpEntity<>(requestData, headers);
-                        String url = podcastScheduleService + request.getRequestURI() + (request.getQueryString() != null ? ("?" + request.getQueryString()) : "");
-                        return restTemplate.exchange(url, Objects.requireNonNull(HttpMethod.resolve(request.getMethod())), body, Object.class);
-                }
-                if ("DELETE".equals(request.getMethod())) {
-                    try {
-                        restTemplate.delete(podcastScheduleService + request.getRequestURI() + (request.getQueryString() != null ? ("?" + request.getQueryString()) : ""));
-                        return ResponseEntity.ok().build();
-                    } catch (Exception e) {
-                        return ResponseEntity.notFound().build();
-                    }
-                }
-            }
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access Forbidden");
-        }
-    }
-
-    @RequestMapping("/api/sali/**")
-    public ResponseEntity<Object> sali(HttpServletRequest request) throws IOException {
         String token = request.getHeader("Authorization");
 
         if(Objects.equals(request.getMethod(), "GET")){

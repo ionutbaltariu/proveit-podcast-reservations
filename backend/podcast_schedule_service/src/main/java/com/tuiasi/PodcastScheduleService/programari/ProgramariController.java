@@ -16,12 +16,12 @@ public class ProgramariController {
         this.programareRepository = programareRepository;
     }
 
-    @GetMapping("/podcast/programari")
+    @GetMapping("/api/podcast/programari")
     ResponseEntity<List<Programare>> getProgramari(){
         return ResponseEntity.ok(programareRepository.findAll());
     }
 
-    @PostMapping("/podcast/programari")
+    @PostMapping("/api/podcast/programari")
     ResponseEntity<Object> addProgramare(@RequestBody Programare programare){
         programareRepository.save(programare);
         return ResponseEntity.ok("204");

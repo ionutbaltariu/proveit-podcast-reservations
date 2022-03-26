@@ -17,12 +17,12 @@ public class SaliController {
         this.salaRepository = salaRepository;
     }
 
-    @GetMapping("/podcast/sali")
+    @GetMapping("/api/podcast/sali")
     ResponseEntity<List<Sala>> getSali(){
         return ResponseEntity.ok(salaRepository.findAll());
     }
 
-    @PostMapping("/podcast/sali")
+    @PostMapping("/api/podcast/sali")
     ResponseEntity<Object> addSala(@RequestBody Sala sala){
         salaRepository.save(sala);
         return ResponseEntity.ok("204");
