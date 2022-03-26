@@ -18,12 +18,20 @@ public class ProgramariController {
 
     @GetMapping("/api/podcast/programari")
     ResponseEntity<List<Programare>> getProgramari(){
+
         return ResponseEntity.ok(programareRepository.findAll());
+
     }
 
     @PostMapping("/api/podcast/programari")
     ResponseEntity<Object> addProgramare(@RequestBody Programare programare){
-        programareRepository.save(programare);
-        return ResponseEntity.ok("204");
+        int value = programareRepository.checkRezervari(programare.getDataStart(), programare.getDataStop());
+        if(value==0) {
+            programareRepository.insertProgramare(programare.getIdSala(), programare.getIdUser(), programare.getDataStart(), programare.getDataStop(), programare.getScop(), programare.getStare(), programare.getTip());
+            return ResponseEntity.ok("204");
+        }
+        else {
+            return ResponseEntity.badRequest().body("{\"mesaj\":\"Eroare la crearea rezervarii\"}");
+        }
     }
 }

@@ -72,11 +72,10 @@ def get_notificare(idNotificare: str):
                         500: {"model": Error}},
              response_model=GenericSuccess,
              tags=["notificari"])
-def post_tichet(notificare: NotificarePostEmail):
+def post_notificare(notificare: NotificarePostEmail):
     """
     Method that handles a POST request for a notificare.
     """
-
     notificare_dict = notificare.dict()
     sender_email = notificare_dict['emailSursa']
     receiver_email = notificare_dict['emailDestinatie']
@@ -109,7 +108,6 @@ def post_tichet(notificare: NotificarePostEmail):
 
     part2 = MIMEText(html, "html")
     message.attach(part2)
-
     context = ssl.create_default_context()
     with smtplib.SMTP_SSL("smtp.gmail.com", 465, context=context) as server:
         server.login("podcast.tuiasi@gmail.com", "1234ASDF!")

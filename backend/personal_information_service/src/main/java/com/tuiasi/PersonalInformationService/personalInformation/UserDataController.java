@@ -22,6 +22,17 @@ public class UserDataController {
         return ResponseEntity.notFound().build();
     }
 
+    @GetMapping("/api/users/{idUser}/coordinator")
+    ResponseEntity<UserData> getCoordinatorUserData(@PathVariable long idUser){
+        try{
+            UserData admin = userDataRepository.findCoordinatorByFaculty(userDataRepository.getFacultyByUserId(idUser));
+            return ResponseEntity.ok(admin);
+        }
+        catch(Exception ignored){
+        }
+        return ResponseEntity.notFound().build();
+    }
+
     @PostMapping("/api/users")
     ResponseEntity<Object> addUserData(@RequestBody UserData userData){
         try{

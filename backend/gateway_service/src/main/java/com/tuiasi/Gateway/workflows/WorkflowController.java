@@ -1,7 +1,9 @@
 package com.tuiasi.Gateway.workflows;
 
 import com.tuiasi.Gateway.connector.SOAPClient;
+import com.tuiasi.Gateway.models.Notificare;
 import com.tuiasi.Gateway.models.UserDetails;
+import com.tuiasi.Gateway.models.UserDetailsFull;
 import com.tuiasi.Gateway.soap.auth.podcast.validate.ValidateResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,6 +14,8 @@ import org.springframework.web.client.RestTemplate;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -54,12 +58,6 @@ public class WorkflowController {
         if (Objects.equals(request.getMethod(), "GET")) {
             return restTemplate.getForEntity(podcastScheduleService + request.getRequestURI() + (request.getQueryString() != null ? ("?" + request.getQueryString()) : ""), Object.class);
         } else {
-            String role;
-            try {
-                role = validate(token.split(" ")[1]).getRole();
-            } catch (Exception e) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("{\"mesaj\":\"Access Forbidden\"}");
-            }
 
             if (Objects.equals(request.getMethod(), "POST")) {
                 HttpHeaders headers = new HttpHeaders();
@@ -67,7 +65,34 @@ public class WorkflowController {
                 String requestData = request.getReader().lines().collect(Collectors.joining());
                 HttpEntity < Object > body = new HttpEntity < > (requestData, headers);
                 String url = podcastScheduleService + request.getRequestURI() + (request.getQueryString() != null ? ("?" + request.getQueryString()) : "");
-                return restTemplate.exchange(url, Objects.requireNonNull(HttpMethod.resolve(request.getMethod())), body, Object.class);
+
+                try {
+                    ResponseEntity<Object> response = restTemplate.exchange(url, Objects.requireNonNull(HttpMethod.resolve(request.getMethod())), body, Object.class);
+                    ValidateResponse validateResponse = validate(token.split(" ")[1]);
+                    String role = validateResponse.getRole();
+                    String userId = validateResponse.getStatus();
+
+                    if(Objects.equals(role, "student")){
+                        UserDetailsFull admin = restTemplate.getForEntity(personalInformationService+ "/api/users/" + userId + "/coordinator", UserDetailsFull.class).getBody();
+                        UserDetailsFull user = restTemplate.getForEntity(personalInformationService + "/api/users/" + userId, UserDetailsFull.class).getBody();
+
+                        assert admin != null;
+                        String emailAdmin = admin.getEmail();
+                        assert user != null;
+                        String emailUser = user.getEmail();
+
+                        int idAdmin = admin.getIdUser();
+                        int idUser = user.getIdUser();
+                        Notificare notificare = new Notificare(emailUser, emailAdmin, idUser, idAdmin, LocalDateTime.now());
+
+                        HttpEntity < Object > bodyNotificare = new HttpEntity < > (notificare, headers);
+                        restTemplate.exchange(notificationService + "/api/notificari/", HttpMethod.POST, bodyNotificare, Object.class);
+                    }
+                     return response;
+                }
+                catch(Exception e){
+                    return ResponseEntity.badRequest().body("{\"mesaj\":\"Eroare la crearea rezervarii\"}");
+                }
             }
 
             if ("DELETE".equals(request.getMethod())) {
@@ -114,7 +139,7 @@ public class WorkflowController {
                     }
                 }
             }
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("{\"mesaj\":\"Access Forbidden\"}");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{\"mesaj\":\"Access Forbidden\"}");
         }
     }
 
@@ -164,19 +189,24 @@ public class WorkflowController {
         return ResponseEntity.badRequest().body("{\"mesaj\":\"Eroare la autentificare\"}");
     }
 
-    @PostMapping("/api/register")
-    private ResponseEntity < Object > register(@RequestBody Map < String, String > user, @RequestHeader("Authorization") String authorization) {
+    @PostMapping("/api/register/admin")
+    private ResponseEntity < Object > registerAdmin(@RequestBody Map < String, String > user, @RequestHeader("Authorization") String authorization) {
         String role;
         try {
             role = validate(authorization.split(" ")[1]).getRole();
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("{\"mesaj\":\"Eroare la autentificare\"}");
         }
-        if (Objects.equals(role, "moderator")) {
+        if (Objects.equals(role, "admin")) {
             // 201 - change to 201
             return ResponseEntity.ok(register(user.get("username"), user.get("password")));
         }
         return ResponseEntity.badRequest().body("{\"mesaj\":\"Eroare la autentificare\"}");
+    }
+
+    @PostMapping("/api/register/student")
+    private ResponseEntity < Object > registerStudent(@RequestBody Map < String, String > user, @RequestHeader("Authorization") String authorization) {
+        return ResponseEntity.ok(register(user.get("username"), user.get("password")));
     }
 
     @RequestMapping("/api/notificari/**")
