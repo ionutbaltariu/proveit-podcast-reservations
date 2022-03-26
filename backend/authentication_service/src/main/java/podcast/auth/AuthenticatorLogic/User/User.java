@@ -18,10 +18,6 @@ public class User implements UserDetails {
 
     private String username;
 
-    private String telefon;
-
-    private String facultate;
-
     private Boolean enabled;
 
     private Boolean accountNonExpired;
@@ -30,28 +26,24 @@ public class User implements UserDetails {
 
     private boolean credentialsNonExpired;
 
-    public User(Long idUser, String rol, String username, String password, String telefon, String facultate, Boolean enabled, Collection<? extends GrantedAuthority> authorities) {
+    public User(Long idUser, String rol, String username, String password, Boolean enabled, Collection<? extends GrantedAuthority> authorities) {
         this.idUser = idUser;
         this.rol = rol;
         this.enabled=enabled;
         this.username=username;
         this.password=password;
-        this.facultate=facultate;
-        this.telefon=telefon;
         this.accountNonExpired=true;
         this.accountNonLocked=true;
         this.credentialsNonExpired=true;
         this.authorities=authorities;
     }
 
-    public User(Long idUser, String rol, String password, String username, String telefon, String facultate, Boolean enabled, Boolean accountNonExpired, Boolean accountNonLocked, boolean credentialsNonExpired, Collection<? extends GrantedAuthority> authorities) {
+    public User(Long idUser, String rol, String password, String username, Boolean enabled, Boolean accountNonExpired, Boolean accountNonLocked, boolean credentialsNonExpired, Collection<? extends GrantedAuthority> authorities) {
         this.authorities = authorities;
         this.idUser = idUser;
         this.rol = rol;
         this.password = password;
         this.username = username;
-        this.facultate=facultate;
-        this.telefon=telefon;
         this.enabled = enabled;
         this.accountNonExpired = accountNonExpired;
         this.accountNonLocked = accountNonLocked;
@@ -121,22 +113,6 @@ public class User implements UserDetails {
         this.username = username;
     }
 
-    public String getTelefon() {
-        return telefon;
-    }
-
-    public void setTelefon(String telefon) {
-        this.telefon = telefon;
-    }
-
-    public String getFacultate() {
-        return facultate;
-    }
-
-    public void setFacultate(String facultate) {
-        this.facultate = facultate;
-    }
-
     public Boolean getEnabled() {
         return enabled;
     }
@@ -173,8 +149,6 @@ public class User implements UserDetails {
                 ", rol='" + rol + '\'' +
                 ", password='" + password + '\'' +
                 ", username='" + username + '\'' +
-                ", telefon='" + telefon + '\'' +
-                ", facultate='" + facultate + '\'' +
                 ", enabled=" + enabled +
                 ", accountNonExpired=" + accountNonExpired +
                 ", accountNonLocked=" + accountNonLocked +

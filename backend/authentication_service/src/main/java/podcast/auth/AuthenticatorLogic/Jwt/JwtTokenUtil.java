@@ -52,9 +52,6 @@ public class JwtTokenUtil implements Serializable {
         System.out.println(userDetails.toString());
         claims.put("iss","http://localhost:7070/authenticate");
         claims.put("role",userDetails.getRol());
-        claims.put("fac", userDetails.getFacultate());
-        claims.put("tel", userDetails.getTelefon());
-        claims.put("email", userDetails.getUsername());
         claims.put("jti", UUID.randomUUID());
         return doGenerateToken(claims, userDetails.getIdUser().toString());
     }
@@ -79,20 +76,5 @@ public class JwtTokenUtil implements Serializable {
     public String getSubjectClaimFromToken(String token) {
         Claims claims = Jwts.parser().setSigningKey(secret).parseClaimsJws(token).getBody();
         return claims.get("sub").toString();
-    }
-
-    public String getFacClaimFromToken(String token){
-        Claims claims = Jwts.parser().setSigningKey(secret).parseClaimsJws(token).getBody();
-        return claims.get("fac").toString();
-    }
-
-    public String getTelClaimFromToken(String token){
-        Claims claims = Jwts.parser().setSigningKey(secret).parseClaimsJws(token).getBody();
-        return claims.get("tel").toString();
-    }
-
-    public String getEmailClaimFromToken(String token){
-        Claims claims = Jwts.parser().setSigningKey(secret).parseClaimsJws(token).getBody();
-        return claims.get("email").toString();
     }
 }

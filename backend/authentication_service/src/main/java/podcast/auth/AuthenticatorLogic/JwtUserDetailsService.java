@@ -28,14 +28,14 @@ public class JwtUserDetailsService implements UserDetailsService {
         if (user == null) {
             throw new UsernameNotFoundException("User not found with username: " + username);
         }
-        return new User(user.getIdUser(), user.getRol(), user.getUsername(), user.getPassword(), user.getTelefon(), user.getFacultate(), true, new ArrayList<>());
+        return new User(user.getIdUser(), user.getRol(), user.getUsername(), user.getPassword(), true, new ArrayList<>());
     }
 
     public DAOUser save(UserDTO user) {
         DAOUser newUser = new DAOUser();
         newUser.setUsername(user.getUsername());
         newUser.setPassword(bcryptEncoder.encode(user.getPassword()));
-        newUser.setRol(user.getRole());
+        newUser.setRol(user.getRol());
         return userDao.save(newUser);
     }
 }

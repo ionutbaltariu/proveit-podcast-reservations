@@ -26,6 +26,10 @@ public class WorkflowController {
     RestTemplate restTemplate;
 
     private final String podcastScheduleService = "http://localhost:6060";
+    private final String personalInformationService = "http://localhost:5050";
+    private final String notificationService = "http://localhost:4040";
+    private final String ticketService = "http://localhost:3030";
+
     private final Logger log = LoggerFactory.getLogger(WorkflowController.class);
 
     @Autowired
@@ -82,18 +86,37 @@ public class WorkflowController {
         }
     }
 
-    @GetMapping("api/validate")
+    @GetMapping("/api/validate")
     private ResponseEntity<Object> validate(HttpServletRequest request){
         String token = request.getHeader("Authorization");
         ValidateResponse validateResponse = validate(token.split(" ")[1]);
-        String response = validateResponse.getStatus();
+        String idUser = validateResponse.getStatus();
         String rol = validateResponse.getRole();
-        UserDetails userInfo = new UserDetails(response.split(" ")[3], rol, response.split(" ")[2], response.split(" ")[1], response.split(" ")[0]);
-
+        UserDetails userInfo = new UserDetails(rol, idUser);
         return ResponseEntity.ok(userInfo);
     }
 
-    @PostMapping("api/authenticate")
+    @RequestMapping("/api/users/**")
+    private ResponseEntity<Object> getUserInformation(HttpServletRequest request) throws IOException {
+        String token = request.getHeader("Authorization");
+        ValidateResponse validateResponse = validate(token.split(" ")[1]);
+        String idUser = validateResponse.getStatus();
+        String rol = validateResponse.getRole();
+        if(Objects.equals(request.getMethod(), "GET")){
+            return restTemplate.getForEntity(personalInformationService + request.getRequestURI() + (request.getQueryString()!= null ? ("?" + request.getQueryString()) : "") , Object.class);
+        }
+        if(Objects.equals(request.getMethod(), "POST")){
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            String requestData = request.getReader().lines().collect(Collectors.joining());
+            HttpEntity<Object> body = new HttpEntity<>(requestData, headers);
+            String url = personalInformationService + request.getRequestURI() + (request.getQueryString() != null ? ("?" + request.getQueryString()) : "");
+            return restTemplate.exchange(url, Objects.requireNonNull(HttpMethod.resolve(request.getMethod())), body, Object.class);
+        }
+        return ResponseEntity.badRequest().build();
+    }
+
+    @PostMapping("/api/authenticate")
     private ResponseEntity<Object> authenticate(@RequestBody Map<String,String> user){
         HashMap<String, String> map = new HashMap<>();
         String token;
@@ -109,7 +132,7 @@ public class WorkflowController {
         return ResponseEntity.badRequest().body("Eroare la autentificare");
     }
 
-    @PostMapping("api/register")
+    @PostMapping("/api/register")
     private ResponseEntity<Object> register(@RequestBody Map<String,String> user, @RequestHeader("Authorization") String authorization){
         String role;
         return ResponseEntity.ok(register(user.get("username"), user.get("password")));

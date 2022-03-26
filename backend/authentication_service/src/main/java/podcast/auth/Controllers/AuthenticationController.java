@@ -69,7 +69,7 @@ public class AuthenticationController {
             UserDTO user = new UserDTO();
             user.setUsername(input.getUsername());
             user.setPassword(input.getPassword());
-            user.setRole("student");
+            user.setRol("student");
             userDetailsService.save(user);
             response.setStatus("200 : Registration succesful");
             response.setErrorMessage("");
@@ -90,10 +90,7 @@ public class AuthenticationController {
             if(!jwtTokenUtil.isTokenExpired(input.getToken())){
                 response.setRole(jwtTokenUtil.getRoleClaimFromToken(input.getToken()));
                 String idUser = jwtTokenUtil.getSubjectClaimFromToken(input.getToken());
-                String facUser = jwtTokenUtil.getFacClaimFromToken(input.getToken());
-                String telUser = jwtTokenUtil.getTelClaimFromToken(input.getToken());
-                String emailUser = jwtTokenUtil.getEmailClaimFromToken(input.getToken());
-                response.setStatus(idUser + " " + facUser + " " + telUser + " " + emailUser);
+                response.setStatus(idUser);
             }
             else{
                 response.setRole("");

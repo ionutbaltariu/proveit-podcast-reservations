@@ -4,6 +4,7 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/authentication_service/AuthorizationService.iml" filepath="$PROJECT_DIR$/authentication_service/AuthorizationService.iml" />
       <module fileurl="file://$PROJECT_DIR$/gateway_service/GatewayService.iml" filepath="$PROJECT_DIR$/gateway_service/GatewayService.iml" />
+      <module fileurl="file://$PROJECT_DIR$/personal_information_service/PersonalInformationService.iml" filepath="$PROJECT_DIR$/personal_information_service/PersonalInformationService.iml" />
       <module fileurl="file://$PROJECT_DIR$/podcast_schedule_service/PodcastScheduleService.iml" filepath="$PROJECT_DIR$/podcast_schedule_service/PodcastScheduleService.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/backend.iml" filepath="$PROJECT_DIR$/.idea/backend.iml" />
     </modules>
