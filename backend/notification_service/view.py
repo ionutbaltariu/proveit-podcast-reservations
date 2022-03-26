@@ -1,6 +1,7 @@
-from fastapi_hypermodel import HyperModel, LinkSet, HALFor
-from pydantic import constr, BaseModel
 from datetime import datetime
+
+from fastapi_hypermodel import HyperModel
+from pydantic import BaseModel
 
 
 class Notificare(HyperModel):
