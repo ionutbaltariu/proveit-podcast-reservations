@@ -15,7 +15,6 @@ import org.springframework.web.client.RestTemplate;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -67,13 +66,13 @@ public class WorkflowController {
                 String url = podcastScheduleService + request.getRequestURI() + (request.getQueryString() != null ? ("?" + request.getQueryString()) : "");
 
                 try {
-                    ResponseEntity<Object> response = restTemplate.exchange(url, Objects.requireNonNull(HttpMethod.resolve(request.getMethod())), body, Object.class);
+                    ResponseEntity < Object > response = restTemplate.exchange(url, Objects.requireNonNull(HttpMethod.resolve(request.getMethod())), body, Object.class);
                     ValidateResponse validateResponse = validate(token.split(" ")[1]);
                     String role = validateResponse.getRole();
                     String userId = validateResponse.getStatus();
 
-                    if(Objects.equals(role, "student")){
-                        UserDetailsFull admin = restTemplate.getForEntity(personalInformationService+ "/api/users/" + userId + "/coordinator", UserDetailsFull.class).getBody();
+                    if (Objects.equals(role, "student")) {
+                        UserDetailsFull admin = restTemplate.getForEntity(personalInformationService + "/api/users/" + userId + "/coordinator", UserDetailsFull.class).getBody();
                         UserDetailsFull user = restTemplate.getForEntity(personalInformationService + "/api/users/" + userId, UserDetailsFull.class).getBody();
 
                         assert admin != null;
@@ -88,9 +87,8 @@ public class WorkflowController {
                         HttpEntity < Object > bodyNotificare = new HttpEntity < > (notificare, headers);
                         restTemplate.exchange(notificationService + "/api/notificari/", HttpMethod.POST, bodyNotificare, Object.class);
                     }
-                     return response;
-                }
-                catch(Exception e){
+                    return response;
+                } catch (Exception e) {
                     return ResponseEntity.badRequest().body("{\"mesaj\":\"Eroare la crearea rezervarii\"}");
                 }
             }
@@ -215,8 +213,24 @@ public class WorkflowController {
     }
 
     @RequestMapping("/api/tichete/**")
-    private ResponseEntity < Object > tichete() {
-        return ResponseEntity.ok("200");
+    private ResponseEntity < Object > tichete(HttpServletRequest request) throws IOException {
+        String token = request.getHeader("Authorization");
+        ValidateResponse validateResponse = validate(token.split(" ")[1]);
+        String rol = validateResponse.getRole();
+        boolean checkUser = Objects.equals(rol, "student") || Objects.equals(rol, "admin");
+        System.out.println("Is in functie");
+        if (Objects.equals(request.getMethod(), "GET") && checkUser) {
+            return restTemplate.getForEntity(ticketService + request.getRequestURI() + (request.getQueryString() != null ? ("?" + request.getQueryString()) : ""), Object.class);
+        }
+        if (Objects.equals(request.getMethod(), "POST") && checkUser) {
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            String requestData = request.getReader().lines().collect(Collectors.joining());
+            HttpEntity < Object > body = new HttpEntity < > (requestData, headers);
+            String url = ticketService + request.getRequestURI() + (request.getQueryString() != null ? ("?" + request.getQueryString()) : "");
+            return restTemplate.exchange(url, Objects.requireNonNull(HttpMethod.resolve(request.getMethod())), body, Object.class);
+        }
+        return ResponseEntity.badRequest().build();
     }
 
 }
