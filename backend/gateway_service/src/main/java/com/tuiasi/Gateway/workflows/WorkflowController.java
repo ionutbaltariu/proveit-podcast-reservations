@@ -3,7 +3,6 @@ package com.tuiasi.Gateway.workflows;
 import com.tuiasi.Gateway.connector.SOAPClient;
 import com.tuiasi.Gateway.models.UserDetails;
 import com.tuiasi.Gateway.soap.auth.podcast.validate.ValidateResponse;
-import org.apache.coyote.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,43 +35,75 @@ public class WorkflowController {
     @Autowired
     SOAPClient soapClient;
 
-    ValidateResponse validate(String token){
+    ValidateResponse validate(String token) {
         return soapClient.getValidationResponse(token);
     }
 
-    String login(String username, String password){
+    String login(String username, String password) {
         return soapClient.getLoginResponse(username, password).getToken();
     }
 
-    String register(String username, String password){
+    String register(String username, String password) {
         return soapClient.getRegisterResponse(username, password).getStatus();
     }
 
-    @RequestMapping("/api/podcast/**")
-    public ResponseEntity<Object> programari(HttpServletRequest request) throws IOException {
+    @RequestMapping("/api/podcast/programari/**")
+    public ResponseEntity < Object > programari(HttpServletRequest request) throws IOException {
         String token = request.getHeader("Authorization");
 
-        if(Objects.equals(request.getMethod(), "GET")){
-            return restTemplate.getForEntity(podcastScheduleService + request.getRequestURI() + (request.getQueryString()!= null ? ("?" + request.getQueryString()) : "") , Object.class);
-        }
-        else{
+        if (Objects.equals(request.getMethod(), "GET")) {
+            return restTemplate.getForEntity(podcastScheduleService + request.getRequestURI() + (request.getQueryString() != null ? ("?" + request.getQueryString()) : ""), Object.class);
+        } else {
             String role;
-            try{
+            try {
                 role = validate(token.split(" ")[1]).getRole();
-            } catch(Exception e){
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access Forbidden");
+            } catch (Exception e) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("{\"mesaj\":\"Access Forbidden\"}");
+            }
+
+            if (Objects.equals(request.getMethod(), "POST")) {
+                HttpHeaders headers = new HttpHeaders();
+                headers.setContentType(MediaType.APPLICATION_JSON);
+                String requestData = request.getReader().lines().collect(Collectors.joining());
+                HttpEntity < Object > body = new HttpEntity < > (requestData, headers);
+                String url = podcastScheduleService + request.getRequestURI() + (request.getQueryString() != null ? ("?" + request.getQueryString()) : "");
+                return restTemplate.exchange(url, Objects.requireNonNull(HttpMethod.resolve(request.getMethod())), body, Object.class);
+            }
+
+            if ("DELETE".equals(request.getMethod())) {
+                try {
+                    restTemplate.delete(podcastScheduleService + request.getRequestURI() + (request.getQueryString() != null ? ("?" + request.getQueryString()) : ""));
+                    return ResponseEntity.ok().build();
+                } catch (Exception e) {
+                    return ResponseEntity.notFound().build();
+                }
+            }
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{\"mesaj\":\"Access Forbidden\"}");
+        }
+    }
+
+    @RequestMapping("/api/podcast/sali/**")
+    public ResponseEntity < Object > sali(HttpServletRequest request) throws IOException {
+        String token = request.getHeader("Authorization");
+
+        if (Objects.equals(request.getMethod(), "GET")) {
+            return restTemplate.getForEntity(podcastScheduleService + request.getRequestURI() + (request.getQueryString() != null ? ("?" + request.getQueryString()) : ""), Object.class);
+        } else {
+            String role;
+            try {
+                role = validate(token.split(" ")[1]).getRole();
+            } catch (Exception e) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("{\"mesaj\":\"Access Forbidden\"}");
             }
 
             if ("admin".equals(role)) {
-                switch (request.getMethod()) {
-                    case "PUT":
-                    case "POST":
-                        HttpHeaders headers = new HttpHeaders();
-                        headers.setContentType(MediaType.APPLICATION_JSON);
-                        String requestData = request.getReader().lines().collect(Collectors.joining());
-                        HttpEntity<Object> body = new HttpEntity<>(requestData, headers);
-                        String url = podcastScheduleService + request.getRequestURI() + (request.getQueryString() != null ? ("?" + request.getQueryString()) : "");
-                        return restTemplate.exchange(url, Objects.requireNonNull(HttpMethod.resolve(request.getMethod())), body, Object.class);
+                if (Objects.equals(request.getMethod(), "POST")) {
+                    HttpHeaders headers = new HttpHeaders();
+                    headers.setContentType(MediaType.APPLICATION_JSON);
+                    String requestData = request.getReader().lines().collect(Collectors.joining());
+                    HttpEntity < Object > body = new HttpEntity < > (requestData, headers);
+                    String url = podcastScheduleService + request.getRequestURI() + (request.getQueryString() != null ? ("?" + request.getQueryString()) : "");
+                    return restTemplate.exchange(url, Objects.requireNonNull(HttpMethod.resolve(request.getMethod())), body, Object.class);
                 }
                 if ("DELETE".equals(request.getMethod())) {
                     try {
@@ -83,12 +114,12 @@ public class WorkflowController {
                     }
                 }
             }
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access Forbidden");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("{\"mesaj\":\"Access Forbidden\"}");
         }
     }
 
     @GetMapping("/api/validate")
-    private ResponseEntity<Object> validate(HttpServletRequest request){
+    private ResponseEntity < Object > validate(HttpServletRequest request) {
         String token = request.getHeader("Authorization");
         ValidateResponse validateResponse = validate(token.split(" ")[1]);
         String idUser = validateResponse.getStatus();
@@ -98,19 +129,19 @@ public class WorkflowController {
     }
 
     @RequestMapping("/api/users/**")
-    private ResponseEntity<Object> getUserInformation(HttpServletRequest request) throws IOException {
+    private ResponseEntity < Object > getUserInformation(HttpServletRequest request) throws IOException {
         String token = request.getHeader("Authorization");
         ValidateResponse validateResponse = validate(token.split(" ")[1]);
         String idUser = validateResponse.getStatus();
         String rol = validateResponse.getRole();
-        if(Objects.equals(request.getMethod(), "GET")){
-            return restTemplate.getForEntity(personalInformationService + request.getRequestURI() + (request.getQueryString()!= null ? ("?" + request.getQueryString()) : "") , Object.class);
+        if (Objects.equals(request.getMethod(), "GET")) {
+            return restTemplate.getForEntity(personalInformationService + request.getRequestURI() + (request.getQueryString() != null ? ("?" + request.getQueryString()) : ""), Object.class);
         }
-        if(Objects.equals(request.getMethod(), "POST")){
+        if (Objects.equals(request.getMethod(), "POST")) {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
             String requestData = request.getReader().lines().collect(Collectors.joining());
-            HttpEntity<Object> body = new HttpEntity<>(requestData, headers);
+            HttpEntity < Object > body = new HttpEntity < > (requestData, headers);
             String url = personalInformationService + request.getRequestURI() + (request.getQueryString() != null ? ("?" + request.getQueryString()) : "");
             return restTemplate.exchange(url, Objects.requireNonNull(HttpMethod.resolve(request.getMethod())), body, Object.class);
         }
@@ -118,15 +149,15 @@ public class WorkflowController {
     }
 
     @PostMapping("/api/authenticate")
-    private ResponseEntity<Object> authenticate(@RequestBody Map<String,String> user){
-        HashMap<String, String> map = new HashMap<>();
+    private ResponseEntity < Object > authenticate(@RequestBody Map < String, String > user) {
+        HashMap < String, String > map = new HashMap < > ();
         String token;
-        try{
+        try {
             token = login(user.get("username"), user.get("password"));
-        }catch(Exception e){
+        } catch (Exception e) {
             return ResponseEntity.badRequest().body("{\"mesaj\":\"Eroare la autentificare\"}");
         }
-        if(token != null && !token.equals("")){
+        if (token != null && !token.equals("")) {
             map.put("token", token);
             return ResponseEntity.ok(map);
         }
@@ -134,14 +165,14 @@ public class WorkflowController {
     }
 
     @PostMapping("/api/register")
-    private ResponseEntity<Object> register(@RequestBody Map<String,String> user, @RequestHeader("Authorization") String authorization){
+    private ResponseEntity < Object > register(@RequestBody Map < String, String > user, @RequestHeader("Authorization") String authorization) {
         String role;
-        try{
+        try {
             role = validate(authorization.split(" ")[1]).getRole();
-        }catch(Exception e){
+        } catch (Exception e) {
             return ResponseEntity.badRequest().body("{\"mesaj\":\"Eroare la autentificare\"}");
         }
-        if(Objects.equals(role, "moderator")){
+        if (Objects.equals(role, "moderator")) {
             // 201 - change to 201
             return ResponseEntity.ok(register(user.get("username"), user.get("password")));
         }
@@ -149,12 +180,12 @@ public class WorkflowController {
     }
 
     @RequestMapping("/api/notificari/**")
-    private ResponseEntity<Object> notifications(){
+    private ResponseEntity < Object > notifications() {
         return ResponseEntity.ok("200");
     }
 
     @RequestMapping("/api/tichete/**")
-    private ResponseEntity<Object> tichete(){
+    private ResponseEntity < Object > tichete() {
         return ResponseEntity.ok("200");
     }
 
