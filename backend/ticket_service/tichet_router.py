@@ -94,7 +94,7 @@ def post_tichet(tichet: TichetPost):
     """
 
     tichet_dict = tichet.dict()
-
+    print(tichet_dict)
     db_response = insert_tichet(**tichet_dict)
 
     if db_response.error:
