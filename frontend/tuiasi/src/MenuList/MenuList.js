@@ -48,12 +48,15 @@ export default function MenuList() {
 
             <ListItem button>
                 <ListItemIcon><ErrorIcon style={{ color: '#ff6565' }} /></ListItemIcon>
-                <ListItemText primary="Semnalează o problema" onClick={routeToTickets} />
+                <ListItemText primary="Semnalează o problemă" onClick={routeToTickets} />
             </ListItem>
 
             <ListItem button>
                 <ListItemIcon><ExitToAppIcon style={{ color: '#ff6565' }} /></ListItemIcon>
-                <ListItemText primary="Deconectare" />
+                <ListItemText primary="Deconectare" onClick={() => {
+                    localStorage.removeItem("token");
+                    navigate('/login');
+                    }}/>
             </ListItem>
         </List>
     )

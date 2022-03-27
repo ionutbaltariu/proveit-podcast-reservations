@@ -12,6 +12,7 @@ import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 
 import Menu from '../Menu/Menu';
+import { useNavigate } from 'react-router-dom';
 
 
 
@@ -42,27 +43,39 @@ const rows = {};
 export default function Profil(props) {
     const today = new Date();
     const drawerWidth = 220;
+    let navigate = useNavigate();
 
     const [rows, setRows] = useState([]);
+    const [token, setToken] = useState();
 
-    let jwt = localStorage.getItem("token");
+    if (!token) {
+        navigate('/login');
+    }
+
+
     useEffect(() => {
-        fetch("http://172.20.98.67:7070/api/users/coordinators", {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${jwt}`
-            },
-        })
-            .then(response => response.json())
-            .then(json => {
-                json.forEach(programare => {
-                    console.log(programare);
-                })
+        let jwt = localStorage.getItem('token');
+        setToken(jwt);
 
-                setRows(json)
-
+        if (jwt) {
+            fetch("http://172.20.98.67:7070/api/users/coordinators", {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${jwt}`
+                },
             })
+                .then(response => response.json())
+                .then(json => {
+                    json.forEach(programare => {
+                        console.log(programare);
+                    })
+
+                    setRows(json)
+
+                })
+        }
+
     }, [])
 
 

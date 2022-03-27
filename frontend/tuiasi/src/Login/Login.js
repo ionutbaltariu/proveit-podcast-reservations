@@ -18,6 +18,8 @@ import PropTypes from 'prop-types';
 import { ToastContainer, toast } from 'react-toastify';
 import background from '.././assets/bg.svg';
 import 'react-toastify/dist/ReactToastify.css';
+import { useNavigate } from "react-router-dom";
+
 
 const notifyError = (message) => toast.error(message, {
     position: "top-center",
@@ -68,23 +70,16 @@ const theme = createTheme({
 export default function Login({ setToken }) {
     const [username, setUserName] = useState();
     const [password, setPassword] = useState();
+    const [jwt, setJwt] = useState();
+    let navigate = useNavigate();
 
     useEffect(() => {
-        let jwt = localStorage.getItem("token");
-
-        // fetch("http://172.20.98.67:7070/api/validate", {
-        //     method: 'GET',
-        //     headers: {
-        //         'Content-Type': 'application/json',
-        //         'Authorization': `Bearer ${jwt}`
-        //     },
-        // })
-        //     .then(response => response.json())
-        //     .then(json => {
-        //         console.log(json)
-
-        //     })
+        setJwt(localStorage.getItem("token"));
     }, [])
+
+    if(jwt){
+        navigate('/dashboard');
+    }
 
     const handleSubmit = (event) => {
         event.preventDefault();
@@ -102,6 +97,7 @@ export default function Login({ setToken }) {
                     if (resp["token"]) {
                         localStorage.setItem("token", resp["token"]);
                         setToken(resp["token"]);
+                        navigate('/dashboard');
                     }
                     else {
                         notifyError("Date invalide.");

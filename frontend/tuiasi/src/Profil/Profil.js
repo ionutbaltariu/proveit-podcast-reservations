@@ -11,6 +11,7 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 import Menu from '../Menu/Menu';
+import { useNavigate } from 'react-router-dom';
 
 
 const { useState, useEffect, Fragment } = React
@@ -39,12 +40,20 @@ export default function Profil(props) {
     const today = new Date();
     const drawerWidth = 220;
 
-    let jwt = localStorage.getItem("token");
+    let navigate = useNavigate();
+    const [token, setToken] = useState();
+
+    if(!token){
+        navigate('/login');
+    }
 
     const [profileData, setProfileData] = useState([]);
     const [podcastData, setPodcastData] = useState([]);
 
     useEffect(() => {
+        let jwt = localStorage.getItem('token');
+        setToken(jwt);
+
         fetch("http://172.20.98.67:7070/api/validate", {
             method: 'GET',
             headers: {

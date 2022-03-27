@@ -14,6 +14,29 @@ import LocalizationProvider from '@mui/lab/LocalizationProvider';
 import AdapterDateFns from '@mui/lab/AdapterDateFns';
 import { TextField } from '@mui/material';
 import Menu from '../Menu/Menu';
+import { useNavigate } from 'react-router-dom';
+import { ToastContainer, toast } from 'react-toastify';
+
+const notifyError = (message) => toast.error(message, {
+    position: "top-center",
+    autoClose: 5000,
+    hideProgressBar: false,
+    closeOnClick: true,
+    pauseOnHover: true,
+    draggable: true,
+    progress: undefined,
+});
+
+const notifyInfo = (message) => toast.info(message, {
+    position: "top-center",
+    autoClose: 5000,
+    hideProgressBar: false,
+    closeOnClick: true,
+    pauseOnHover: true,
+    draggable: true,
+    progress: undefined,
+});
+
 
 const { useState, useEffect, Fragment } = React
 
@@ -105,8 +128,8 @@ const findEventsForDate = (events, date) => {
 // Top bar, contains the month/year combo as well as back/forward links
 const Navigation = ({ date, setDate, setShowingEventForm }) => {
     return (
-
         <ThemeProvider theme={theme} >
+            <ToastContainer></ToastContainer>
             <div className="navigation">
                 <div className="back" onClick={() => {
                     const newDate = new Date(date)
@@ -173,7 +196,7 @@ const Event = ({ event, setViewingEvent, setShowingEventForm, deleteEvent }) => 
             <p>De la <b>{event.dataStart}</b> până la <b>{event.dataStop}</b></p>
             <p>{event.scop}</p>
 
-            <button className="custom-button" onClick={() => {
+            {/* <button className="custom-button" onClick={() => {
                 setViewingEvent(null)
                 setShowingEventForm({ visible: true, withEvent: event })
             }}>
@@ -182,7 +205,7 @@ const Event = ({ event, setViewingEvent, setShowingEventForm, deleteEvent }) => 
 
             <button className="red custom-button" onClick={() => deleteEvent(event)}>
                 Șterge această rezervare
-            </button>
+            </button> */}
 
             <a className="close" onClick={() => setViewingEvent(null)}>Înapoi la calendarul cu rezervări</a>
         </Modal>
@@ -201,10 +224,6 @@ const EventForm = ({ setShowingEventForm, addEvent, editEvent, withEvent, setVie
     return (
         <Modal onClose={() => setShowingEventForm({ visible: false })} title={`${withEvent ? "Modificare programare" : "Adaugă o programare nouă"}`}>
             <div className="form">
-                <label>Dați un nume evenimentului
-                    <input className='custom-input' type="text" placeholder="e.g: podcast LSAC" defaultValue={event.tip} onChange={(e) => setEvent({ ...event, tip: e.target.value })} />
-                </label>
-
                 <LocalizationProvider dateAdapter={AdapterDateFns} style={{ display: "flex" }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                         <div style={{ flex: '1' }}>
@@ -260,8 +279,32 @@ const EventForm = ({ setShowingEventForm, addEvent, editEvent, withEvent, setVie
                     </Fragment>
                 ) : (
                     <Fragment>
-                        <button className="custom-button" onClick={() => addEvent(event)}>Adaugă</button>
-                        <a className="close" onClick={() => setShowingEventForm({ visible: false })}>Cancel (go back to calendar)</a>
+                        <button className="custom-button" onClick={() => {
+                            setEvent({ ...event, tip: 'rezervare' });
+                            console.log(event);
+                            // addEvent(event)
+                            fetch("http://172.20.98.67:7070/api/podcast/programari", {
+                                body: JSON.stringify({
+                                    "idSala": 1,
+                                    "idUser": localStorage.getItem('idUser'),
+                                    "dataStart": event.dataStart.toString().replace('T', ' '),
+                                    "dataStop": event.dataStop.toString().replace('T', ' '),
+                                    "scop": event.scop,
+                                    "stare": "in_verificare",
+                                    "tip": "rezervare"
+                                }),
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'Authorization': `Bearer ${localStorage.getItem("token")}`
+                                },
+                            })
+                            .then(response => {
+                                console.log(response.status);
+                                console.log(response);
+                            })
+                        }}>Adaugă</button>
+                        <a className="close" onClick={() => setShowingEventForm({ visible: false })}>Anulează (întoarce-te la calendar)</a>
                     </Fragment>
                 )}
             </div>
@@ -345,7 +388,7 @@ const Grid = ({ date, events, setViewingEvent, setShowingEventForm, actualDate }
 }
 
 // The "main" component, our actual calendar
-const Calendar = ({ month, year, preloadedEvents = {}}) => {
+const Calendar = ({ month, year, preloadedEvents = {} }) => {
 
     const selectedDate = new Date(year, month - 1)
 
@@ -356,15 +399,15 @@ const Calendar = ({ month, year, preloadedEvents = {}}) => {
 
     const parsedEvents = parseEvents(preloadedEvents)
     const [events, setEvents] = useState(parsedEvents)
-    
-    
+
+
     useEffect(() => {
         setEvents(parsedEvents)
-        
+
         console.log("Date has changed... Let's load some fresh data")
         console.log(events)
     }, [date])
-    
+
     const addEvent = (event) => {
         setIsLoading(true)
         setShowingEventForm({ visible: false })
@@ -375,7 +418,7 @@ const Calendar = ({ month, year, preloadedEvents = {}}) => {
 
             const updatedEvents = [...events]
             updatedEvents.push(parsedEvents[0])
- 
+
             setEvents(updatedEvents)
             setIsLoading(false)
             // showFeedback({ message: "Event created successfully", stare: "success" })
@@ -459,29 +502,60 @@ export default function Dashboard(props) {
     let today = new Date();
     const drawerWidth = 220;
     const [appointments, setAppointments] = useState([]);
+    let navigate = useNavigate();
+    const [token, setToken] = useState();
+
+    if (!token) {
+        navigate('/login');
+    }
 
     useEffect(() => {
         let jwt = localStorage.getItem("token");
+        let status;
+        setToken(jwt);
 
-        fetch("http://172.20.98.67:7070/api/podcast/programari?idSala=1", {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${jwt}`
-            },
-        })
-        .then(response => response.json())
-        .then(json => {
-            json.forEach(programare => {
-                programare["dataStart"] = dateToInputFormat(new Date(programare["dataStart"]));
-                programare["dataStop"] = dateToInputFormat(new Date(programare["dataStop"]));
-                // console.log(programare);
+        if (jwt) {
+            fetch("http://172.20.98.67:7070/api/validate", {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${jwt}`
+                },
             })
-            console.log(JSON.stringify(json));
-            setAppointments(json)
-        })
-       
+                .then(response => {
+                    status = response.status;
+                    return response;
+                })
+                .then(response => response.json())
+                .then(json => {
+                    if (status === 200) {
+                        localStorage.setItem('idUser', json["idUser"]);
+                    }
+                    else {
+                        // notifyError("Token invalid. Te rugam sa te autentifici din no")
+                        localStorage.removeItem('token');
+                        navigate('/login');
+                    }
+                })
 
+            fetch("http://172.20.98.67:7070/api/podcast/programari?idSala=1", {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${jwt}`
+                },
+            })
+                .then(response => response.json())
+                .then(json => {
+                    json.forEach(programare => {
+                        programare["dataStart"] = dateToInputFormat(new Date(programare["dataStart"]));
+                        programare["dataStop"] = dateToInputFormat(new Date(programare["dataStop"]));
+                        // console.log(programare);
+                    })
+                    console.log(JSON.stringify(json));
+                    setAppointments(json)
+                })
+        }
     }, []);
 
     return (

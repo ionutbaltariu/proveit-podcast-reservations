@@ -1,13 +1,7 @@
 import * as React from 'react';
-import AppBar from '@mui/material/AppBar';
-import CssBaseline from '@mui/material/CssBaseline';
-import Divider from '@mui/material/Divider';
-import Drawer from '@mui/material/Drawer';
-
 import Toolbar from '@mui/material/Toolbar';
-import Typography from '@mui/material/Typography';
 import { Box } from '@mui/material';
-
+import { useNavigate } from 'react-router-dom';
 import Menu from '../Menu/Menu';
 
 const { useState, useEffect, Fragment } = React
@@ -17,9 +11,18 @@ export default function Instructiuni(props) {
     const today = new Date();
     const drawerWidth = 220;
 
-    let jwt = localStorage.getItem("token");
+    let navigate = useNavigate();
+    const [token, setToken] = useState();
+
+    if (!token) {
+        navigate('/login');
+    }
+
 
     useEffect(() => {
+        let jwt = localStorage.getItem('token');
+        setToken(jwt);
+
         fetch("http://172.20.98.67:7070/api/validate", {
             method: 'GET',
             headers: {
