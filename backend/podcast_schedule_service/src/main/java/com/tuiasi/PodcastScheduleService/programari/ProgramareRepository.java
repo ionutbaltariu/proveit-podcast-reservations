@@ -31,4 +31,7 @@ public interface ProgramareRepository extends JpaRepository<Programare, Long> {
 
     @Query(value="SELECT * FROM programari WHERE idSala=?1", nativeQuery = true)
     List<Programare> findByIdSala(Integer idSala);
+
+    @Query(value="SELECT * FROM programari WHERE idUser=?1", nativeQuery = true)
+    List<Programare> findByIdUser(Integer idUser);
 }

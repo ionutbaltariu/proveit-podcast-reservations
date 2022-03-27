@@ -18,7 +18,8 @@ public class ProgramariController {
     ResponseEntity<List<Programare>> getProgramari(
             @Nullable @RequestParam String tip,
             @Nullable @RequestParam String stare,
-            @Nullable @RequestParam Integer idSala){
+            @Nullable @RequestParam Integer idSala,
+            @Nullable @RequestParam Integer idUser){
         if(tip != null){
             ResponseEntity.ok(programareRepository.findByTip(tip));
         }
@@ -27,6 +28,9 @@ public class ProgramariController {
         }
         if(idSala != null){
             ResponseEntity.ok(programareRepository.findByIdSala(idSala));
+        }
+        if(idUser != null){
+            ResponseEntity.ok(programareRepository.findByIdUser(idUser));
         }
 
         return ResponseEntity.ok(programareRepository.findAll());
