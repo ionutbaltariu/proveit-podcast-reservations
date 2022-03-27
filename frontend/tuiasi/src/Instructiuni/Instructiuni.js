@@ -1,6 +1,6 @@
 import * as React from 'react';
 import Toolbar from '@mui/material/Toolbar';
-import { Box } from '@mui/material';
+import { Box, Typography } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import Menu from '../Menu/Menu';
 
@@ -33,7 +33,7 @@ export default function Instructiuni(props) {
             .then(response => response.json())
             .then(json => {
                 console.log(json)
-
+                localStorage.setItem('idUser', json["idUser"]);
             })
     }, [])
 
@@ -46,6 +46,13 @@ export default function Instructiuni(props) {
                 sx={{ flexGrow: 1, bgcolor: 'background.default', p: 3 }}
             >
                 <Toolbar />
+                <Typography>
+                    Pentru a introduce o programare, navigati la pagina "Rezervari". Apoi apasati pe semnul "+" din cadrul zilei in care doriti sa faceti programarea.
+                </Typography>
+                <video width="1024" height="644" controls>
+                    <source src={require('../assets/prezentare.mp4')} type="video/mp4"/>
+                        Your browser does not support the video tag.
+                </video>
             </Box>
         </Box>
     )

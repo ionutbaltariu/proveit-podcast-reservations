@@ -76,6 +76,7 @@ export default function Profil(props) {
                     .then(data => {
                         console.log(data)
                         setProfileData(data)
+                        localStorage.setItem('idUser', json["idUser"]);
                     })
 
 

@@ -224,6 +224,7 @@ const EventForm = ({ setShowingEventForm, addEvent, editEvent, withEvent, setVie
     return (
         <Modal onClose={() => setShowingEventForm({ visible: false })} title={`${withEvent ? "Modificare programare" : "Adaugă o programare nouă"}`}>
             <div className="form">
+                <ToastContainer></ToastContainer>
                 <LocalizationProvider dateAdapter={AdapterDateFns} style={{ display: "flex" }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                         <div style={{ flex: '1' }}>
@@ -299,10 +300,18 @@ const EventForm = ({ setShowingEventForm, addEvent, editEvent, withEvent, setVie
                                     'Authorization': `Bearer ${localStorage.getItem("token")}`
                                 },
                             })
-                            .then(response => {
-                                console.log(response.status);
-                                console.log(response);
-                            })
+                                .then(response => {
+                                    console.log(response.status);
+                                    console.log(response);
+
+                                    if (response.status === 200) {
+                                        setShowingEventForm({ visible: false });
+                                        notifyInfo("Programarea a fost transmisa.");
+                                    }
+                                    else {
+                                        notifyError('Exista deja o programare in intervalul selectat!')
+                                    }
+                                })
                         }}>Adaugă</button>
                         <a className="close" onClick={() => setShowingEventForm({ visible: false })}>Anulează (întoarce-te la calendar)</a>
                     </Fragment>
