@@ -23,7 +23,6 @@ class TichetPost(HyperModel):
     idUser: int
     prioritate: constr(min_length=1, max_length=10)
     descriere: constr(min_length=1, max_length=300)
-    stare: constr(min_length=1, max_length=15)
 
     class Config:
         orm_mode = True
