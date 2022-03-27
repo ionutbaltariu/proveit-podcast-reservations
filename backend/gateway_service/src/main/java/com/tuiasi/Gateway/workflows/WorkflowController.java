@@ -206,7 +206,7 @@ public class WorkflowController {
     @PostMapping("/api/register/student")
     private ResponseEntity < Object > registerStudent(@RequestBody Map < String, String > user) {
         String response = register(user.get("username"), user.get("password"));
-        if(Objects.equals(response, "200 : Registration succesful")){
+        if (Objects.equals(response, "200 : Registration succesful")) {
             String token = login(user.get("username"), user.get("password"));
             ValidateResponse validateResponse = validate(token);
             String idUser = validateResponse.getStatus();

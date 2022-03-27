@@ -6,7 +6,6 @@ import org.springframework.data.jpa.repository.Query;
 
 import javax.transaction.Transactional;
 import java.time.LocalDateTime;
-import java.util.Date;
 import java.util.List;
 
 public interface ProgramareRepository extends JpaRepository<Programare, Long> {
