@@ -148,6 +148,8 @@ public class WorkflowController {
         ValidateResponse validateResponse = validate(token.split(" ")[1]);
         String idUser = validateResponse.getStatus();
         String rol = validateResponse.getRole();
+        if(Objects.equals(idUser, "400") && Objects.equals(rol, "none"))
+            return ResponseEntity.badRequest().body("{\"mesaj\":\"Credentiale gresite\"}");
         UserDetails userInfo = new UserDetails(rol, idUser);
         return ResponseEntity.ok(userInfo);
     }
