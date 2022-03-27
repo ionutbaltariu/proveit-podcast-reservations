@@ -1,19 +1,9 @@
 // Sample events calendar build, explained and detailed over at
 // https://justacoding.blog/react-calendar-component-example-with-events/
 import * as React from 'react';
-import PropTypes from 'prop-types';
-import AppBar from '@mui/material/AppBar';
-import CssBaseline from '@mui/material/CssBaseline';
-import Divider from '@mui/material/Divider';
-import Drawer from '@mui/material/Drawer';
-import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
-import ListItemText from '@mui/material/ListItemText';
 import Toolbar from '@mui/material/Toolbar';
-import Typography from '@mui/material/Typography';
 import ArrowBackIcon from '@material-ui/icons/ArrowBack';
 import ArrowForwardIcon from '@material-ui/icons/ArrowForward';
-import { useTheme } from '@mui/material/styles';
 import { Box } from '@mui/material';
 import { Button } from '@mui/material';
 import { blue } from '@mui/material/colors';
@@ -23,6 +13,7 @@ import DateTimePicker from '@mui/lab/DateTimePicker';
 import LocalizationProvider from '@mui/lab/LocalizationProvider';
 import AdapterDateFns from '@mui/lab/AdapterDateFns';
 import { TextField } from '@mui/material';
+import Menu from '../Menu/Menu';
 
 const { useState, useEffect, Fragment } = React
 
@@ -89,8 +80,8 @@ const dateToInputFormat = (date) => {
 
 const parseEvents = (events) => {
     return events.map(event => {
-        const from = new Date(event.dateFrom)
-        const to = new Date(event.dateTo)
+        const from = new Date(event.dataStart)
+        const to = new Date(event.dataStop)
 
         return {
             ...event,
@@ -169,33 +160,31 @@ const DayLabels = () => {
 const MiniEvent = ({ event, setViewingEvent }) => {
     return (
         <div
-            className={`miniEvent ${event.type ? event.type.toLowerCase() : "standard"}`}
+            className={`miniEvent ${event.stare ? event.stare.toLowerCase() : "standard"}`}
             onClick={() => setViewingEvent(event)}>
-
-
-            {event.name}
+            {event.tip}
         </div>
     )
 }
 
 const Event = ({ event, setViewingEvent, setShowingEventForm, deleteEvent }) => {
     return (
-        <Modal onClose={() => setViewingEvent(null)} title={`${event.name} (${event.type})`} className="eventModal">
-            <p>From <b>{event.dateFrom}</b> to <b>{event.dateTo}</b></p>
-            <p>{event.meta}</p>
+        <Modal onClose={() => setViewingEvent(null)} title={`${event.tip} (${event.stare})`} className="eventModal">
+            <p>De la <b>{event.dataStart}</b> până la <b>{event.dataStop}</b></p>
+            <p>{event.scop}</p>
 
-            <button onClick={() => {
+            <button className="custom-button" onClick={() => {
                 setViewingEvent(null)
                 setShowingEventForm({ visible: true, withEvent: event })
             }}>
-                Change this event
+                Modifică această rezervare
             </button>
 
-            <button className="red" onClick={() => deleteEvent(event)}>
-                Delete this event
+            <button className="red custom-button" onClick={() => deleteEvent(event)}>
+                Șterge această rezervare
             </button>
 
-            <a className="close" onClick={() => setViewingEvent(null)}>Back to calendar</a>
+            <a className="close" onClick={() => setViewingEvent(null)}>Înapoi la calendarul cu rezervări</a>
         </Modal>
     )
 }
@@ -203,39 +192,47 @@ const Event = ({ event, setViewingEvent, setShowingEventForm, deleteEvent }) => 
 const EventForm = ({ setShowingEventForm, addEvent, editEvent, withEvent, setViewingEvent, preselectedDate }) => {
     const newEvent = withEvent || {}
     if (!withEvent && !!preselectedDate) {
-        newEvent.dateFrom = dateToInputFormat(preselectedDate)
+        newEvent.dataStart = dateToInputFormat(preselectedDate)
     }
     const [event, setEvent] = useState(newEvent);
     const [startDate, setStartDate] = useState();
     const [endDate, setEndDate] = useState();
 
     return (
-        <Modal onClose={() => setShowingEventForm({ visible: false })} title={`${withEvent ? "Edit event" : "Adauga o programare noua"}`}>
+        <Modal onClose={() => setShowingEventForm({ visible: false })} title={`${withEvent ? "Modificare programare" : "Adaugă o programare nouă"}`}>
             <div className="form">
-                <label>Dati un nume evenimentului
-                    <input type="text" placeholder="e.g: podcast LSAC" defaultValue={event.name} onChange={(e) => setEvent({ ...event, name: e.target.value })} />
+                <label>Dați un nume evenimentului
+                    <input className='custom-input' type="text" placeholder="e.g: podcast LSAC" defaultValue={event.tip} onChange={(e) => setEvent({ ...event, tip: e.target.value })} />
                 </label>
 
-                <label>De la
-                    <input type="datetime-local" defaultValue={event.dateFrom || dateToInputFormat(preselectedDate)} onChange={(e) => setEvent({ ...event, dateFrom: e.target.value })} />
-                </label>
-                <LocalizationProvider dateAdapter={AdapterDateFns}>
-                    <DateTimePicker
-                        label="Date&Time picker"
-                        value={startDate}
-                        onChange={(val) => {
-                            setStartDate(val);
-                        }}
-                        renderInput={(params) => <TextField {...params} />}
-                    />
+                <LocalizationProvider dateAdapter={AdapterDateFns} style={{ display: "flex" }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <div style={{ flex: '1' }}>
+                            <label>De la</label>
+                            <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                <DateTimePicker
+                                    value={event.dataStart || dateToInputFormat(preselectedDate)}
+                                    onChange={(e) => setEvent({ ...event, dataStart: dateToInputFormat(e) })}
+                                    renderInput={(params) => <TextField {...params} />}
+                                    wrapperClassName="d-flex"
+                                />
+                            </div>
+                        </div>
+                        <div style={{ flex: '1', paddingLeft: '5px' }}>
+                            <label>Pana la</label>
+                            <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                <DateTimePicker
+                                    value={event.dataStop}
+                                    onChange={(e) => setEvent({ ...event, dataStop: dateToInputFormat(e) })}
+                                    renderInput={(params) => <TextField {...params} />}
+                                />
+                            </div>
+                        </div>
+                    </div>
                 </LocalizationProvider>
 
-                <label>Pana la
-                    <input type="datetime-local" defaultValue={event.dateTo} onChange={(e) => setEvent({ ...event, dateTo: e.target.value })} />
-                </label>
-
-                <label>Tipul programarii
-                    <select value={event.type ? event.type.toLowerCase() : "standard"} onChange={(e) => setEvent({ ...event, type: e.target.value })}>
+                <label>Tipul programării
+                    <select value={event.stare ? event.stare.toLowerCase() : "standard"} onChange={(e) => setEvent({ ...event, stare: e.target.value })}>
                         <option value="standard">Rezervare</option>
                         <option value="standard">Mentenanta</option>
                     </select>
@@ -243,15 +240,16 @@ const EventForm = ({ setShowingEventForm, addEvent, editEvent, withEvent, setVie
 
                 <label>Descriere
                     <textarea
+                        style={{ display: "block", minWidth: "100%", maxWidth: "100%", height: "4rem", marginBottom: "0.5rem" }}
                         placeholder="Oferă mai multe detalii despre programare"
-                        defaultValue={event.meta}
-                        onChange={(e) => setEvent({ ...event, meta: e.target.value })}
+                        defaultValue={event.scop}
+                        onChange={(e) => setEvent({ ...event, scop: e.target.value })}
                     />
                 </label>
 
                 {withEvent ? (
                     <Fragment>
-                        <button onClick={() => editEvent(event)}>Edit event</button>
+                        <button className="custom-button" onClick={() => editEvent(event)}>Modificare</button>
                         <a className="close" onClick={() => {
                             setShowingEventForm({ visible: false })
                             setViewingEvent(event)
@@ -262,7 +260,7 @@ const EventForm = ({ setShowingEventForm, addEvent, editEvent, withEvent, setVie
                     </Fragment>
                 ) : (
                     <Fragment>
-                        <button onClick={() => addEvent(event)}>Adauga</button>
+                        <button className="custom-button" onClick={() => addEvent(event)}>Adaugă</button>
                         <a className="close" onClick={() => setShowingEventForm({ visible: false })}>Cancel (go back to calendar)</a>
                     </Fragment>
                 )}
@@ -331,12 +329,23 @@ const Grid = ({ date, events, setViewingEvent, setShowingEventForm, actualDate }
                     </div>
                 )
             })}
+            <div className="legend">
+                <div className="legendItem">
+                    <div className="legendSquare aprobata"></div> Rezervare aprobată
+                </div>
+                <div className="legendItem">
+                    <div className="legendSquare respinsa"></div> Rezervare respinsă
+                </div>
+                <div className="legendItem">
+                    <div className="legendSquare in_verificare"></div> Rezervare în curs de verificare
+                </div>
+            </div>
         </Fragment>
     )
 }
 
 // The "main" component, our actual calendar
-const Calendar = ({ month, year, preloadedEvents = [] }) => {
+const Calendar = ({ month, year, preloadedEvents = {}}) => {
 
     const selectedDate = new Date(year, month - 1)
 
@@ -347,24 +356,29 @@ const Calendar = ({ month, year, preloadedEvents = [] }) => {
 
     const parsedEvents = parseEvents(preloadedEvents)
     const [events, setEvents] = useState(parsedEvents)
-
+    
+    
     useEffect(() => {
+        setEvents(parsedEvents)
+        
         console.log("Date has changed... Let's load some fresh data")
+        console.log(events)
     }, [date])
-
+    
     const addEvent = (event) => {
         setIsLoading(true)
         setShowingEventForm({ visible: false })
 
         setTimeout(() => {
             const parsedEvents = parseEvents([event])
+            console.log('parsedEvents:', parsedEvents);
 
             const updatedEvents = [...events]
             updatedEvents.push(parsedEvents[0])
-
+ 
             setEvents(updatedEvents)
             setIsLoading(false)
-            // showFeedback({ message: "Event created successfully", type: "success" })
+            // showFeedback({ message: "Event created successfully", stare: "success" })
         }, MOCK_LOADING_TIME)
     }
 
@@ -376,12 +390,12 @@ const Calendar = ({ month, year, preloadedEvents = [] }) => {
             const parsedEvent = parseEvents([event])
 
             const updatedEvents = [...events].map(updatedEvent => {
-                return updatedEvent.id === event.id ? parsedEvent[0] : updatedEvent
+                return updatedEvent.idSala === event.idSala ? parsedEvent[0] : updatedEvent
             })
 
             setEvents(updatedEvents)
             setIsLoading(false)
-            // showFeedback({ message: "Event edited successfully", type: "success" })
+            // showFeedback({ message: "Event edited successfully", stare: "success" })
         }, MOCK_LOADING_TIME)
     }
 
@@ -390,11 +404,11 @@ const Calendar = ({ month, year, preloadedEvents = [] }) => {
         setViewingEvent(null)
 
         setTimeout(() => {
-            const updatedEvents = [...events].filter(finalEvent => finalEvent.id != event.id)
+            const updatedEvents = [...events].filter(finalEvent => finalEvent.idSala != event.idSala)
 
             setEvents(updatedEvents)
             setIsLoading(false)
-            // showFeedback({ message: "Event deleted successfully", type: "success" })
+            // showFeedback({ message: "Event deleted successfully", stare: "success" })
         }, MOCK_LOADING_TIME)
     }
 
@@ -442,52 +456,37 @@ const Calendar = ({ month, year, preloadedEvents = [] }) => {
 }
 
 export default function Dashboard(props) {
-    const today = new Date();
+    let today = new Date();
     const drawerWidth = 220;
+    const [appointments, setAppointments] = useState([]);
+
+    useEffect(() => {
+        let jwt = localStorage.getItem("token");
+
+        fetch("http://172.20.98.67:7070/api/podcast/programari?idSala=1", {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${jwt}`
+            },
+        })
+        .then(response => response.json())
+        .then(json => {
+            json.forEach(programare => {
+                programare["dataStart"] = dateToInputFormat(new Date(programare["dataStart"]));
+                programare["dataStop"] = dateToInputFormat(new Date(programare["dataStop"]));
+                // console.log(programare);
+            })
+            console.log(JSON.stringify(json));
+            setAppointments(json)
+        })
+       
+
+    }, []);
 
     return (
         <Box sx={{ display: 'flex' }}>
-            <CssBaseline />
-            <AppBar
-                position="fixed"
-                sx={{ width: `calc(100% - ${drawerWidth}px)`, ml: `${drawerWidth}px` }}
-            >
-                <Toolbar>
-                    <Typography variant="h6" noWrap component="div">
-                        Rezervari
-                    </Typography>
-                </Toolbar>
-            </AppBar>
-            <Drawer
-                sx={{
-                    width: drawerWidth,
-                    flexShrink: 0,
-                    '& .MuiDrawer-paper': {
-                        width: drawerWidth,
-                        boxSizing: 'border-box',
-                    },
-                }}
-                variant="permanent"
-                anchor="left"
-            >
-                <Toolbar />
-                <Divider />
-                <List>
-                    <ListItem button>
-                        <ListItemText primary="Profil" />
-                    </ListItem>
-                    <ListItem button>
-                        <ListItemText primary="Rezervari" />
-                    </ListItem>
-                    <ListItem button>
-                        <ListItemText primary="Administratori" />
-                    </ListItem>
-                    <ListItem button>
-                        <ListItemText primary="Delogare" />
-                    </ListItem>
-                </List>
-
-            </Drawer>
+            <Menu pageName="Rezervări"></Menu>
             <Box
                 component="main"
                 sx={{ flexGrow: 1, bgcolor: 'background.default', p: 3 }}
@@ -496,18 +495,7 @@ export default function Dashboard(props) {
                 <Calendar
                     month={today.getMonth() + 1}
                     year={today.getFullYear()}
-                    preloadedEvents={
-                        [
-                            {
-                                id: 1,
-                                name: "Holiday",
-                                dateFrom: "2022-03-26T12:00",
-                                dateTo: "2022-03-26T14:00",
-                                meta: SAMPLE_META,
-                                type: "Holiday"
-                            }
-                        ]
-                    }
+                    preloadedEvents={appointments}
                 />
             </Box>
         </Box>
