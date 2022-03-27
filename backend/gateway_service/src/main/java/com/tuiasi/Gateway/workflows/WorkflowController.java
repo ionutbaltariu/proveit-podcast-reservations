@@ -4,6 +4,7 @@ import com.tuiasi.Gateway.connector.SOAPClient;
 import com.tuiasi.Gateway.models.Notificare;
 import com.tuiasi.Gateway.models.UserDetails;
 import com.tuiasi.Gateway.models.UserDetailsFull;
+import com.tuiasi.Gateway.soap.auth.podcast.login.LoginResponse;
 import com.tuiasi.Gateway.soap.auth.podcast.validate.ValidateResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -204,7 +205,21 @@ public class WorkflowController {
 
     @PostMapping("/api/register/student")
     private ResponseEntity < Object > registerStudent(@RequestBody Map < String, String > user) {
-        return ResponseEntity.ok(register(user.get("username"), user.get("password")));
+        String response = register(user.get("username"), user.get("password"));
+        if(Objects.equals(response, "200 : Registration succesful")){
+            String token = login(user.get("username"), user.get("password"));
+            ValidateResponse validateResponse = validate(token);
+            String idUser = validateResponse.getStatus();
+            String rol = validateResponse.getRole();
+            UserDetailsFull newUser = new UserDetailsFull(Integer.parseInt(idUser), user.get("telefon"), user.get("facultate"), user.get("email"), rol);
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            HttpEntity < Object > body = new HttpEntity < > (newUser, headers);
+            String url = personalInformationService + "/api/users";
+            restTemplate.exchange(url, HttpMethod.POST, body, Object.class);
+        }
+        return ResponseEntity.ok(response);
     }
 
     @RequestMapping("/api/notificari/**")
